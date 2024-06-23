@@ -35,7 +35,7 @@ def main( ):
     R2000.fast_power( 22 )
     R2000.set_work_antenna( READER_ANTENNA['ANTENNA1'] )
 
-    while True:
+    while True: #将这个True修改为上层应用的程序是否停止的变量标志位，如果上次应用将此标志位设置为“停止”，那循环读取就停止
         try:
             data = TAG_QUEUE.get( timeout=0.2 )
         except BaseException:
@@ -43,6 +43,12 @@ def main( ):
             continue
 
         time.sleep( 1 )     # Read data must be delay 1s above.
+        if 'DONE' == data.get('type'):
+            continue
+
+        #将数据反馈给上层应用，交给上层应用处理。
+
+        print('\n', data)
         print( 'EPC  --> {}'.format( data['epc'] ) )
         print( 'TID  >>> ', end='' )
         print( R2000.read( data['epc'], bank='TID',  size=3 ) )
@@ -50,6 +56,6 @@ def main( ):
         print( R2000.read( data['epc'], bank='EPC',  size=8 )[8:] ) # Removed PC(2Bytes) and CRC[2Bytes]
         print( 'USER >>> ', end='' )
         print( R2000.read( data['epc'], bank='USER', size=2 ) )
-
+
 if __name__ == "__main__":
     main()

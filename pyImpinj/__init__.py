@@ -72,6 +72,7 @@ class ImpinjProtocolFactory( serial.threaded.FramedPacket ):
     def handle_packet( self, packet ):
         try:
             length, command, message = packet[1], packet[3], packet[4:-1]
+            #print("handle_packet:", hex(command), hex(length), [ '%02X' % x for x in message ])
         except BaseException as err:
             logging.error( '[ERROR] ImpinjProtocolFactory.handle_packet : {}'.format( err ) )
             return
@@ -122,6 +123,7 @@ class ImpinjProtocolFactory( serial.threaded.FramedPacket ):
                                           antenna=antenna,
                                           frequency=frequency, rssi=rssi, epc=epc ) )
         else:
+            #print(hex(length),hex(command), [ '%02X' % x for x in message ])
             self.command_queue.put( dict( command=command, data=message ) )
 
     def connection_lost( self, exc ):
@@ -144,8 +146,10 @@ class ImpinjR2KReader( object ):
         def decorator( func ):
             def wrapper( self, *args, **kwargs ):
                 func( self, *args, **kwargs )
+                #print(func)
                 try:
                     data = self.command_queue.get( timeout=timeout )
+                    #print("DATA:",[ '%02X' % x for x in data['data'] ], type(data['data']))
                     if method == 'DATA':
                         return data['data']
                     else:
@@ -218,6 +222,10 @@ class ImpinjR2KReader( object ):
     @analyze_data( 'DATA' )
     def get_rf_power( self ):
         self.protocol.get_rf_power( )
+
+    @analyze_data( 'DATA' )
+    def get_version( self ):
+        self.protocol.version( )
 
     @analyze_data( )
     def fast_power( self, value=22 ):

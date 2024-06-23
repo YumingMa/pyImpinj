@@ -33,6 +33,7 @@ class ImpinjR2KProtocols( object ):
     def register( command ):
         def decorator( func ):
             def wrapper( self, *args, **kwargs ):
+                #print(func)
                 data = func( self, *args, **kwargs )
                 data = [] if data is None else data
                 message = [ self.__head ]
@@ -40,13 +41,16 @@ class ImpinjR2KProtocols( object ):
                 message.extend(  data   )
                 message.append( libscrc.lrc( bytes( message ) ) )
                 self.__address = data[0] if command == ImpinjR2KCommands.SET_READER_ADDRESS else self.__address
-                logging.debug( [ hex(x) for x in message ] )
+                #logging.debug( [ hex(x) for x in message ] )
+                #print( [ hex(x) for x in message ] )
 
                 if self.serial is not None:
                     try:
                         return self.serial.write( bytes( message ) )
                     except BaseException as err:
                         logging.error( err )
+
+                #print( [ hex(x) for x in message ] )
                 return bytes( message )
             return wrapper
         return decorator
